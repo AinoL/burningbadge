@@ -1,0 +1,10 @@
+[app]
+name = "Burn"
+menu = "Apps"
+
+[entry]
+class = "Burn"
+
+[metadata]
+author = "burn1ngl0w3rs"
+license = "MIT"
