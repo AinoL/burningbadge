@@ -20,27 +20,49 @@ class Burn(Application):
         ]
         self.i = 0
         self.time = 0
+
+        self.led_buffer = [[0, 0,0]]*40
+        self.last_draw = 0
+        self.interval = 250
         
     def draw(self, ctx: Context) -> None:
-        if self.i == 0:
-            ctx.image(
-                "/flash/sys/apps/cccflower/Exploits.png",
-                -121,
-                -121,
-                242,
-                242
-            )
-        self.time = (self.time + 1)%10
-        if self.time == 0:
-            for f in self.fire_array:
-                leds.set_rgb(self.i, *f)
-                self.i = (self.i + 1)%40
-            c = self.fire_array.pop(0)
-            self.fire_array.append(c)
-            leds.update()
+        ctx.image(
+            "/flash/sys/apps/cccflower/Exploits.png",
+            -121,
+            -121,
+            242,
+            242
+        )
+
+        for i, led in enumerate(self.led_buffer):
+            leds.set_rgb(i, *led)
+
+        leds.update()
 
     def think(self, ins: InputState, delta_ms: int) -> None:
-        pass
+        self.last_draw += delta_ms
+
+        rage = 500 * (delta_ms / 1000)
+
+        direction = ins.buttons.app # -1 (left), 1 (right), or 2 (pressed)
+        if direction == -1 and self.interval < 1000:
+            self.interval += rage
+
+        elif direction == 1 and self.interval > 30:
+            self.interval -= rage
+
+
+        if self.last_draw < self.interval:
+            return
+
+        self.last_draw = 0
+
+        for f in self.fire_array:
+            self.led_buffer[self.i] = f
+            self.i = (self.i + 1) % 40
+
+        c = self.fire_array.pop(0)
+        self.fire_array.append(c)
 
 if __name__ == "__main__":
     st3m.run.run_view(Burn(ApplicationContext()))
