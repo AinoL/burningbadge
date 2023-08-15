@@ -9,6 +9,7 @@ class Burn(Application):
     def __init__(self, app_ctx: ApplicationContext) -> None:
         super().__init__(app_ctx)
         random.seed()
+        leds.set_slew_rate(10)
         self.fire_array = [
             [128, 17, 0],
             [182, 34, 3],
@@ -21,6 +22,14 @@ class Burn(Application):
         self.time = 0
         
     def draw(self, ctx: Context) -> None:
+        if self.i == 0:
+            ctx.image(
+                "/flash/sys/apps/burningbadge/Exploits.png",
+                -121,
+                -121,
+                242,
+                242
+            )
         self.time = (self.time + 1)%10
         if self.time == 0:
             for f in self.fire_array:
