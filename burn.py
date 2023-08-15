@@ -15,9 +15,12 @@ offset = 0
 while True:
     while ledcounter < 40:
         for i in fire_array:
-            leds.set_rgb(ledcounter+offset, *i)
+            leds.set_rgb(ledcounter, *i)
             leds.update()
             time.sleep(0.1)
             ledcounter = ledcounter+1
+    c = fire_array.pop(1)
+    print(c)
+    fire_array.append(c)
     ledcounter = 0
     offset = offset + 1
