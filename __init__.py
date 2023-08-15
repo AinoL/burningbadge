@@ -24,7 +24,7 @@ class Burn(Application):
     def draw(self, ctx: Context) -> None:
         if self.i == 0:
             ctx.image(
-                "/flash/sys/apps/burningbadge/Exploits.png",
+                "/flash/sys/apps/cccflower/Exploits.png",
                 -121,
                 -121,
                 242,
