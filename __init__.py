@@ -5,6 +5,7 @@ import leds
 import random
 import time
 import math
+import json
 
 top_left_x = math.ceil(
     120 * math.cos(
@@ -23,6 +24,17 @@ bottom_right_y = math.ceil(120 * math.sin(180-45))
 class Burn(Application):
     def __init__(self, app_ctx: ApplicationContext) -> None:
         super().__init__(app_ctx)
+
+        try:
+            with open("/flash/nick.json") as f:
+                data = json.load(f)
+        except OSError:
+            data = {}
+
+        self.name = data.get("name", "flow3r")
+        self._scale = 0
+        self._phase = 0.0
+
         random.seed()
         leds.set_slew_rate(10)
 
@@ -40,7 +52,7 @@ class Burn(Application):
         ]
 
         self.led_buffer = [self.fire_array[0]]*40
-        self.led_since_step =  0
+        self.led_since_step = 0
         self.led_interval = 250
         self.led_fire_array_index = 0
 
@@ -48,21 +60,28 @@ class Burn(Application):
         self.image_since_step = 0
         self.image_interval = 10000
         self.image_index = 1
-        self.images = [
-            [
-                "/flash/sys/apps/cccflower/Exploits.png",
-                -121,
-                -121,
-                242,
-                242
-            ],
-            [
+        self.burning_flower = [
                 "/flash/sys/apps/cccflower/burningflowers.png",
                 -top_left_x,
                 top_left_y,
 
                 math.ceil(math.fabs(top_left_x * 2)),
                 math.ceil(math.fabs(top_left_y * 2)),
+            ]
+        self.images = [
+            [
+                "/flash/sys/apps/cccflower/spede_nelio.png",
+                -110,
+                -110,
+                225,
+                225
+            ],
+            [
+                "/flash/sys/apps/cccflower/Exploits.png",
+                -121,
+                -121,
+                242,
+                242
             ]
         ]
 
@@ -73,11 +92,32 @@ class Burn(Application):
         self.bg_fire_array_index = 0
         
     def draw(self, ctx: Context) -> None:
+
         ctx.rgb(*self.bg_color).rectangle(-120, -120, 240, 240).fill()
 
-        ctx.image(
-            *self.images[self.image_index]
-        )
+        # Nick is after last image
+
+        if self.image_index == len(self.images):
+
+            ctx.image(*self.burning_flower)
+
+            ctx.text_align = ctx.CENTER
+            ctx.text_baseline = ctx.MIDDLE
+            ctx.font_size = 60
+            ctx.font = ctx.get_font_name(5)
+
+            ctx.rotate(1.755*math.pi)
+
+            ctx.rgb(0.322, 0.322, 0.322)
+            ctx.move_to(0, 25)
+            ctx.save()
+
+            ctx.text(self.name)
+            ctx.restore()
+        else:
+            ctx.image(
+                *self.images[self.image_index]
+            )
 
         for i, led in enumerate(self.led_buffer):
             leds.set_rgb(i, *led)
@@ -88,6 +128,9 @@ class Burn(Application):
         self.led_since_step += delta_ms
         self.image_since_step += delta_ms
         self.bg_since_step += delta_ms
+
+        self._phase += delta_ms / 1000
+        self._scale = math.sin(self._phase)
 
         if self.bg_since_step > self.bg_interval:
             self.bg_since_step = 0
@@ -128,7 +171,7 @@ class Burn(Application):
 
         if self.image_since_step > self.image_interval:
             self.image_since_step = 0
-            self.image_index = (self.image_index + 1) % len(self.images)
+            self.image_index = (self.image_index + 1) % (len(self.images) + 1)
 
 if __name__ == "__main__":
     st3m.run.run_view(Burn(ApplicationContext()))
